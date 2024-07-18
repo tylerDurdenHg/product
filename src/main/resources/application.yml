@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: product-service
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: 1234
+    url: jdbc:postgresql://172.18.0.2/product
+    platform: postgres
+    initialization-mode: always
+    continue-on-error: true
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    
+# logging properties
+logging:
+  pattern:
+    console: "%clr(TS=){faint}%clr(%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z', UTC}){faint} [%t] %clr(APP=){faint}%clr(${spring.application.name:null}){yellow} %clr(LEVEL=){faint}%clr(${LOG_LEVEL_PATTERN:%p}) %clr(CLASS=){faint}%clr(%logger{26}){cyan} %clr(TRACEID=){faint}%clr(%X{X-Correlation-Id:-null}){reverse} | %m%n%ex"
+
+
+    
+myk8s:
+  user:
+    user_name: Tyler
+    last_name: Durden
+    password: 1234
+  location: us-west  
