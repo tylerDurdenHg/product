@@ -22,7 +22,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 @RestController
-@RequestMapping(path = "v1/product")
+@RequestMapping(path = "v1/products")
 public class ProductController {
 
     private static final Logger log = LoggerFactory.getLogger(ProductController.class);
