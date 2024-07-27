@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.hg.product.dto.SimpleResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -37,8 +38,8 @@ public class ProductFacade {
 
     public ApiResponse deleteProductById(final Long id) {
         boolean isDeleted = service.deleteProductById(id);
-        return new ApiResponse(HttpStatus.OK.name(), List.of(),
-                String.format("Id:%s deleted:%s", id, isDeleted));
+        String deletedMessage = String.format("Id:%s deleted:%s", id, isDeleted);
+        return new ApiResponse(HttpStatus.OK.name(), List.of(), new SimpleResponseDTO(deletedMessage));
     }
 
     public ApiResponse findById(final Long id) {
@@ -47,18 +48,18 @@ public class ProductFacade {
     }
 
     public ApiResponse findProductByType(final String type) {
-        List<ProductResponseDTO> responseDTO = service.findProductByType(type)
+        List<ProductResponseDTO> responseDTOs = service.findProductByType(type)
                 .stream()
                 .map(ProductMapper::productToProductResponseDTO)
                 .toList();
-        return new ApiResponse(HttpStatus.OK.name(), List.of(), responseDTO);
+        return new ApiResponse(HttpStatus.OK.name(), List.of(), responseDTOs);
     }
 
     public ApiResponse findProductsToTypes() {
         Map<ProductType, List<Product>> allProductsToTypes = service.findProductsToTypes()
                 .stream()
                 .collect(Collectors.collectingAndThen(
-                        Collectors.groupingBy(Product::getType, Collectors.toList()),
+                        Collectors.groupingBy(Product::getProductType, Collectors.toList()),
                         Collections::unmodifiableMap
                 ));
 

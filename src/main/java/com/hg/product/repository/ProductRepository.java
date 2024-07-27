@@ -12,11 +12,11 @@ import com.hg.product.enums.ProductType;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-	@Query(value = "select u from Product u where u.type = ?1")
+	@Query(value = "select u from Product u where u.productType = ?1")
 	List<Product> findProductByType(ProductType type);
 
 	
-	@Query(value = "select * from Product u where u.type is not null", nativeQuery = true)
+	@Query(value = "select * from Product u where u.productType is not null", nativeQuery = true)
 	List<Product> findProductsToTypes();
 
 }

@@ -37,7 +37,7 @@ public class ProductController {
         log.info("ProductController::saveProduct request: {}", requestDTO);
         ApiResponse apiResponse = facade.saveProduct(requestDTO);
         log.info("ProductController::saveProduct response: {}", apiResponse);
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
     @PutMapping(path = "/id/{id}")
@@ -53,7 +53,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse> deleteProductById(@Valid @PathVariable(value = "id") final Long id) {
         log.info("ProductController::deleteProduct request: {}", id);
         ApiResponse apiResponse = facade.deleteProductById(id);
-        log.info("ProductController::deleteProduct response: {}", apiResponse.results());
+        log.info("ProductController::deleteProduct response: {}", apiResponse.data());
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 

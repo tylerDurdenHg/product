@@ -27,8 +27,8 @@ public class Product extends BaseEntity {
 	
 	@NotNull
 	@Enumerated(EnumType.STRING)
-	@Column(name = "type", nullable = false)
-	private ProductType type;
+	@Column(name = "productType", nullable = false)
+	private ProductType productType;
 
 	@Min(value = 1)
 	@Column(name = "quantity", nullable = false)
@@ -45,12 +45,12 @@ public class Product extends BaseEntity {
 		this.name = name;
 	}
 
-	public ProductType getType() {
-		return type;
+	public ProductType getProductType() {
+		return productType;
 	}
 
-	public void setType(ProductType type) {
-		this.type = type;
+	public void setProductType(ProductType productType) {
+		this.productType = productType;
 	}
 
 	public int getQuantity() {
@@ -71,7 +71,7 @@ public class Product extends BaseEntity {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.getId(),name, type);
+		return Objects.hash(super.getId(), name, productType);
 	}
 
 	@Override
@@ -83,8 +83,8 @@ public class Product extends BaseEntity {
 		
 		Product other = (Product) obj;
 		return  Objects.equals(this.getId(), other.getId()) 
-				&& Objects.equals(this.name, other.name) 
-				&& this.type == other.type;
+				&& Objects.equals(this.name, other.name)
+				&& this.productType == other.productType;
 	}
 	
 

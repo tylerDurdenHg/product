@@ -11,49 +11,45 @@ import com.hg.product.exception.ProductNotFoundException;
 
 public class ProductMapper {
 
-	public static ProductResponseDTO productToProductResponseDTO(final Product product) 
-	{
-		return new ProductResponseDTO.Builder()
-				.name(product.getName())
-				.type(product.getType().name())
-				.quantity(product.getQuantity())
-				.createdAt(product.getCreatedAt())
-				.updatedAt(product.getUpdatedAt())
-				.build();
-	}
+    public static ProductResponseDTO productToProductResponseDTO(final Product product) {
+        return new ProductResponseDTO.Builder()
+                .name(product.getName())
+                .type(product.getProductType().name())
+                .quantity(product.getQuantity())
+                .createdAt(product.getCreatedAt())
+                .updatedAt(product.getUpdatedAt())
+                .build();
+    }
 
-	public static Product productRequestToProduct(ProductRequestDTO dto) 
-	{
-		Optional<ProductType> productType = getProductType(dto);
+    public static Product productRequestToProduct(ProductRequestDTO dto) {
+        Optional<ProductType> productType = getProductType(dto);
 
-		Product product = new Product();
-		product.setName(dto.name());
-		product.setType(productType.get());
-		product.setQuantity(dto.quantity());
+        Product product = new Product();
+        product.setName(dto.name());
+        product.setProductType(productType.get());
+        product.setQuantity(dto.quantity());
 
-		return product;
-	}
+        return product;
+    }
 
-	public static Product updateProductWithNewValues(Product product, ProductRequestDTO dto) 
-	{
-		Optional<ProductType> productType = getProductType(dto);
-		
-		product.setName(dto.name());
-		product.setType(productType.get());
-		product.setQuantity(dto.quantity());
-		product.setUpdatedAt(LocalDateTime.now());
-		
-		return product;
-	}
+    public static Product updateProductWithNewValues(Product product, ProductRequestDTO dto) {
+        Optional<ProductType> productType = getProductType(dto);
 
-	private static Optional<ProductType> getProductType(ProductRequestDTO dto) 
-	{
-		Optional<ProductType> productType = ProductType.findType(dto.type());
-		if (productType.isEmpty()) {
-			throw new ProductNotFoundException("Type Not Exist",
-					String.format("Product's type:%S not found", dto.type()));
-		}
-		return productType;
-	}
+        product.setName(dto.name());
+        product.setProductType(productType.get());
+        product.setQuantity(dto.quantity());
+        product.setUpdatedAt(LocalDateTime.now());
+
+        return product;
+    }
+
+    private static Optional<ProductType> getProductType(ProductRequestDTO dto) {
+        Optional<ProductType> productType = ProductType.findType(dto.type());
+        if (productType.isEmpty()) {
+            throw new ProductNotFoundException("Type Not Exist",
+                    String.format("Product's type:%S not found", dto.type()));
+        }
+        return productType;
+    }
 
 }
