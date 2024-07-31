@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ProductApplication {
 
 	public static void main(String[] args) {
-		String formatted = "unusal text %s between %s".formatted("test1", "test2");
+		String formatted = "tylering another text %s between %s".formatted("test1", "test2");
 		System.out.println(formatted);
 		SpringApplication.run(ProductApplication.class, args);
 	}
