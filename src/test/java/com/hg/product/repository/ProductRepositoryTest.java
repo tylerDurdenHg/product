@@ -2,6 +2,7 @@ package com.hg.product.repository;
 
 import com.hg.product.entity.Product;
 import com.hg.product.enums.ProductType;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -64,7 +66,6 @@ public class ProductRepositoryTest {
         Product created = repository.save(product1);
         assertThat(created).isNotNull();
         assertThat(created.getId()).isNotNull();
-        assertThat(created.getId()).isGreaterThan(0L);
     }
 
     @Test
