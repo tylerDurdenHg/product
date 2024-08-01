@@ -46,7 +46,7 @@ public class ProductMapper {
     private static Optional<ProductType> getProductType(ProductRequestDTO dto) {
         Optional<ProductType> productType = ProductType.findType(dto.type());
         if (productType.isEmpty()) {
-            throw new ProductNotFoundException("Type Not Exist",
+            throw new ProductNotFoundException("PRD-NEXS",
                     String.format("Product's type:%S not found", dto.type()));
         }
         return productType;
