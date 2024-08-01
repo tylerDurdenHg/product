@@ -33,13 +33,12 @@ public class ProductServiceImpl implements ProductService {
             Product product = ProductMapper.productRequestToProduct(requestDTO);
             return repo.save(product);
         } catch (Exception e) {
-            if (!(e instanceof GenericException)) {
-                log.error("ProductServiceImpl::saveProduct Exception: {} {}", requestDTO,
-                        e.getMessage());
-                throw new BusinessInternalException("Business Exception",
-                        String.format("Exception occurred while saving to db product:%s", requestDTO));
+            if (e instanceof GenericException) {
+                log.error("ProductServiceImpl::saveProduct Exception with dto:{}", requestDTO, e);
+                throw e;
             }
-            throw e;
+            log.error("Non Business Exception with ", e);
+            throw new BusinessInternalException("REPO-0001", String.format("Exception saving db for product:%s", requestDTO), e);
         }
     }
 
@@ -51,12 +50,12 @@ public class ProductServiceImpl implements ProductService {
             Product productUpdated = ProductMapper.updateProductWithNewValues(product, requestDTO);
             return repo.save(productUpdated);
         } catch (Exception e) {
-            if (!(e instanceof GenericException)) {
-                log.error("ProductServiceImpl::updateProduct Exception:{}", id);
-                throw new BusinessInternalException("Business Exception",
-                        String.format("Exception occured while updating product with id:%s", id));
+            if (e instanceof GenericException) {
+                log.error("ProductServiceImpl::updateProduct Exception:{}", id, e);
+                throw e;
             }
-            throw e;
+            log.error("Non Business Exception with ", e);
+            throw new BusinessInternalException("REPO-UPDATE", String.format("Exception when updating with id:%s", id), e);
         }
     }
 
@@ -66,12 +65,12 @@ public class ProductServiceImpl implements ProductService {
             fetchById(id);
             repo.deleteById(id);
         } catch (Exception e) {
-            if (!(e instanceof GenericException)) {
-                log.error("ProductServiceImpl::deleteProductById Exception: {}", id);
-                throw new BusinessInternalException("Business Exception",
-                        String.format("Exception occured while deleting product with id:%s", id));
+            if (e instanceof GenericException) {
+                log.error("ProductServiceImpl::deleteProductById Exception product id:{}", id, e);
+                throw e;
             }
-            throw e;
+            log.error("Non Business Exception with ", e);
+            throw new BusinessInternalException("REPO-DELETE", String.format("Exception while deleting product with id:%s", id), e);
         }
         return true;
     }
@@ -81,12 +80,12 @@ public class ProductServiceImpl implements ProductService {
         try {
             return fetchById(id);
         } catch (Exception e) {
-            if (!(e instanceof GenericException)) {
-                log.error("ProductServiceImpl::findById Exception: {} {}", id, e.getMessage());
-                throw new BusinessInternalException("Business Exception",
-                        String.format("Exception occurred while fetching the product by id:%s", id));
+            if (e instanceof GenericException) {
+                log.error("ProductServiceImpl::findById Exception:", e);
+                throw e;
             }
-            throw e;
+            log.error("Non Business Exception with ", e);
+            throw new BusinessInternalException("REPO-FINDBYID", String.format("Exception while fetching product with id:%s", id), e);
         }
     }
 
@@ -96,24 +95,22 @@ public class ProductServiceImpl implements ProductService {
         try {
             Optional<ProductType> productType = ProductType.findType(type);
             if (productType.isEmpty()) {
-                throw new ProductNotFoundException("Type Not Exist",
+                throw new ProductNotFoundException("PRD-NEXS",
                         String.format("Product's type:%s not found", type));
             }
 
             products = repo.findProductByType(productType.get());
             if (products == null || products.isEmpty()) {
-                throw new ProductNotFoundException("Product Not Exist",
+                throw new ProductNotFoundException("PRD-NEXS",
                         String.format("There is not any product to this type:%s", type));
             }
         } catch (Exception e) {
-
-            if (!(e instanceof GenericException)) {
-                log.error("ProductServiceImpl::findProductByType  Exception: {} {}", type,
-                        e.getMessage());
-                throw new BusinessInternalException("Business Exception",
-                        String.format("Exception occurred while fetching the product by type:%s", type));
+            if (e instanceof GenericException) {
+                log.error("ProductServiceImpl::findProductByType Exception product type:{}", type, e);
+                throw e;
             }
-            throw e;
+            log.error("Non Business Exception with ", e);
+            throw new BusinessInternalException("REPO-FINDTTYPE", String.format("Exception while fetching product with type:%s", type), e);
         }
         return products;
     }
@@ -124,18 +121,17 @@ public class ProductServiceImpl implements ProductService {
         try {
             response = repo.findProductsToTypes();
             if (response == null || response.isEmpty()) {
-                throw new ProductNotFoundException("Products Not Exists",
+                throw new ProductNotFoundException("PRD-NEXS",
                         "There is not any  product with any types");
             }
 
         } catch (Exception e) {
-            if (!(e instanceof GenericException)) {
-                log.error("ProductServiceImpl::findProductsToTypes  Exception: {}",
-                        e.getMessage());
-                throw new BusinessInternalException("Business Exception",
-                        "Exception occurred while fetching the product to all types");
+            if (e instanceof GenericException) {
+                log.error("ProductServiceImpl::findProductsToTypes Exception fetching all types", e);
+                throw e;
             }
-            throw e;
+            log.error("Non Business Exception with ", e);
+            throw new BusinessInternalException("REPO-FINDTTYPES", "Exception while fetching products to all types", e);
         }
         return response;
     }
@@ -146,15 +142,15 @@ public class ProductServiceImpl implements ProductService {
         try {
             products = repo.findAll();
             if (products.isEmpty()) {
-                throw new ProductNotFoundException("Product Not Exist", "There is not any product");
+                throw new ProductNotFoundException("PRD-NEXS", "There is not any product");
             }
         } catch (Exception e) {
-            if (!(e instanceof GenericException)) {
-                log.error("ProductServiceImpl::findAllProducts Exception: {}", e.getMessage());
-                throw new BusinessInternalException("Business Exception",
-                        "Exception occurred while fetching all products");
+            if (e instanceof GenericException) {
+                log.error("ProductServiceImpl::findAllProducts Exception fetching all types", e);
+                throw e;
             }
-            throw e;
+            log.error("Non Business Exception with ", e);
+            throw new BusinessInternalException("REPO-FINDALL", "Exception while fetching all products", e);
         }
         return products;
     }
@@ -162,7 +158,7 @@ public class ProductServiceImpl implements ProductService {
     private Product fetchById(Long id) {
         return repo
                 .findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product Not Exist",
+                .orElseThrow(() -> new ProductNotFoundException("PRD-0001",
                         String.format("Product id:%s not found", id)));
     }
 
