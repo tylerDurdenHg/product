@@ -1,10 +1,7 @@
 package com.hg.product.utility.strings;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class StringOperation {
 
@@ -41,14 +38,13 @@ public class StringOperation {
     }
 
     private String removeSpecialChars(String withSpecialChars) {
-//        String regex = "[,.']";
         String regex = "[^a-zA-Z]";
         return withSpecialChars.replaceAll(regex, "");
     }
 
     private List<Character> charArrayStream(String st) {
         return st.chars()
-                .mapToObj(s -> Character.valueOf((char) s))
+                .mapToObj(s -> (char) s)
                 .toList();
     }
 
@@ -65,10 +61,6 @@ public class StringOperation {
     }
 
     private String joinList(List<String> cars) {
-        // or use stream join
-//        String secondX = cars.stream()
-//                .collect(Collectors.joining(", "));
-//        System.out.println("secondX = " + secondX);
         return String.join(",", cars);
     }
 }

@@ -11,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hg.product.dto.ProductRequestDTO;
 import com.hg.product.entity.Product;
 import com.hg.product.enums.ProductType;
-import com.hg.product.exception.BusinessInternalException;
-import com.hg.product.exception.GenericException;
 import com.hg.product.exception.ProductNotFoundException;
 import com.hg.product.mapper.ProductMapper;
 import com.hg.product.repository.ProductRepository;
+
+import static com.hg.product.logger.GenericLogger.handleException;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -29,34 +29,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product saveProduct(ProductRequestDTO requestDTO) {
+        Product result = null;
         try {
             Product product = ProductMapper.productRequestToProduct(requestDTO);
-            return repo.save(product);
+            result = repo.save(product);
         } catch (Exception e) {
-            if (e instanceof GenericException) {
-                log.error("ProductServiceImpl::saveProduct Exception with dto:{}", requestDTO, e);
-                throw e;
-            }
-            log.error("Non Business Exception with ", e);
-            throw new BusinessInternalException("REPO-0001", String.format("Exception saving db for product:%s", requestDTO), e);
+            handleException(log, "ProductServiceImpl::saveProduct ", "when saving dto:", requestDTO, "REPO-0001", e);
         }
+        return result;
     }
 
     @Transactional
     @Override
     public Product updateProduct(Long id, ProductRequestDTO requestDTO) {
+        Product result = null;
         try {
             Product product = fetchById(id);
             Product productUpdated = ProductMapper.updateProductWithNewValues(product, requestDTO);
-            return repo.save(productUpdated);
+            result = repo.save(productUpdated);
         } catch (Exception e) {
-            if (e instanceof GenericException) {
-                log.error("ProductServiceImpl::updateProduct Exception:{}", id, e);
-                throw e;
-            }
-            log.error("Non Business Exception with ", e);
-            throw new BusinessInternalException("REPO-UPDATE", String.format("Exception when updating with id:%s", id), e);
+            handleException(log, "ProductServiceImpl::updateProduct ", "when updating by id:", id, "REPO-0001", e);
         }
+        return result;
     }
 
     @Override
@@ -65,33 +59,25 @@ public class ProductServiceImpl implements ProductService {
             fetchById(id);
             repo.deleteById(id);
         } catch (Exception e) {
-            if (e instanceof GenericException) {
-                log.error("ProductServiceImpl::deleteProductById Exception product id:{}", id, e);
-                throw e;
-            }
-            log.error("Non Business Exception with ", e);
-            throw new BusinessInternalException("REPO-DELETE", String.format("Exception while deleting product with id:%s", id), e);
+            handleException(log, "ProductServiceImpl::deleteProductById ", "when deleting product by id:", id, "REPO-0001", e);
         }
         return true;
     }
 
     @Override
     public Product findById(Long id) {
+        Product result = null;
         try {
-            return fetchById(id);
+            result = fetchById(id);
         } catch (Exception e) {
-            if (e instanceof GenericException) {
-                log.error("ProductServiceImpl::findById Exception:", e);
-                throw e;
-            }
-            log.error("Non Business Exception with ", e);
-            throw new BusinessInternalException("REPO-FINDBYID", String.format("Exception while fetching product with id:%s", id), e);
+            handleException(log, "ProductServiceImpl::findById ", "when fetching product by id:", id, "REPO-0001", e);
         }
+        return result;
     }
 
     @Override
     public List<Product> findProductByType(String type) {
-        List<Product> products;
+        List<Product> products = List.of();
         try {
             Optional<ProductType> productType = ProductType.findType(type);
             if (productType.isEmpty()) {
@@ -105,52 +91,36 @@ public class ProductServiceImpl implements ProductService {
                         String.format("There is not any product to this type:%s", type));
             }
         } catch (Exception e) {
-            if (e instanceof GenericException) {
-                log.error("ProductServiceImpl::findProductByType Exception product type:{}", type, e);
-                throw e;
-            }
-            log.error("Non Business Exception with ", e);
-            throw new BusinessInternalException("REPO-FINDTTYPE", String.format("Exception while fetching product with type:%s", type), e);
+            handleException(log, "ProductServiceImpl::findProductByType", "when fetching product by type", type, "REPO-0001", e);
         }
         return products;
     }
 
     @Override
     public List<Product> findProductsToTypes() {
-        List<Product> response;
+        List<Product> response = List.of();
         try {
             response = repo.findProductsToTypes();
             if (response == null || response.isEmpty()) {
-                throw new ProductNotFoundException("PRD-NEXS",
-                        "There is not any  product with any types");
+                throw new ProductNotFoundException("PRD-NEXS", "There is not any  product with any types");
             }
 
         } catch (Exception e) {
-            if (e instanceof GenericException) {
-                log.error("ProductServiceImpl::findProductsToTypes Exception fetching all types", e);
-                throw e;
-            }
-            log.error("Non Business Exception with ", e);
-            throw new BusinessInternalException("REPO-FINDTTYPES", "Exception while fetching products to all types", e);
+            handleException(log, "ProductServiceImpl::findProductsToTypes", "when fetching product all types", null, "REPO-0001", e);
         }
         return response;
     }
 
     @Override
     public List<Product> findAllProducts() {
-        List<Product> products;
+        List<Product> products = List.of();
         try {
             products = repo.findAll();
             if (products.isEmpty()) {
                 throw new ProductNotFoundException("PRD-NEXS", "There is not any product");
             }
         } catch (Exception e) {
-            if (e instanceof GenericException) {
-                log.error("ProductServiceImpl::findAllProducts Exception fetching all types", e);
-                throw e;
-            }
-            log.error("Non Business Exception with ", e);
-            throw new BusinessInternalException("REPO-FINDALL", "Exception while fetching all products", e);
+            handleException(log, "ProductServiceImpl::findAllProducts", "when fetching product all ", null, "REPO-0001", e);
         }
         return products;
     }
