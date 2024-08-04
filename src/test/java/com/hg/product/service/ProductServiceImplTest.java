@@ -3,7 +3,7 @@ package com.hg.product.service;
 import com.hg.product.dto.ProductRequestDTO;
 import com.hg.product.entity.Product;
 import com.hg.product.enums.ProductType;
-import com.hg.product.exception.BusinessInternalException;
+import com.hg.product.exception.NonBusinessException;
 import com.hg.product.exception.ProductNotFoundException;
 import com.hg.product.mapper.ProductMapper;
 import com.hg.product.repository.ProductRepository;
@@ -90,7 +90,7 @@ class ProductServiceImplTest {
         when(repo.findById(id)).thenThrow(IllegalArgumentException.class);
         assertThatThrownBy(() -> service.findById(id))
                 .hasMessageContaining("while fetching the product")
-                .isExactlyInstanceOf(BusinessInternalException.class);
+                .isExactlyInstanceOf(NonBusinessException.class);
 
     }
 

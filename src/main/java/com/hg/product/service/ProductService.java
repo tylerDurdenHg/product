@@ -5,6 +5,12 @@ import java.util.List;
 import com.hg.product.dto.ProductRequestDTO;
 import com.hg.product.entity.Product;
 
+/**
+	<li> first line in javadoc</li>
+	<li> second line</li>
+ 	<img src="https://www.google.com/logos/doodles/2024/paris-games-surfing-6753651837110528-s.png" />
+ **/
+
 public interface ProductService {
 
 	Product saveProduct(ProductRequestDTO requestDTO);
