@@ -41,8 +41,10 @@ class ProductServiceImplTestAI {
 
             assertNotNull(savedProduct);
             verify(repo, times(1)).save(product);
+
         }
     }
+
 
     @Test
     void testUpdateProduct() {
