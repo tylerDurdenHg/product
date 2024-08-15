@@ -3,8 +3,8 @@ spring:
     name: product-service
   datasource:
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: 1234
+    username: ${db_username}
+    password: ${db_password}
     url: jdbc:postgresql://172.18.0.2/product
     platform: postgres
     initialization-mode: always
@@ -15,7 +15,34 @@ spring:
     hibernate:
       ddl-auto: create
     database: postgresql
-    
+  cloud:
+    config:
+      enabled: false
+    vault:
+      authentication: token
+      enabled: true
+      kv:
+        backend: product-service
+        default-context: dev
+        enabled: true
+      token: ${VAULT_TOKEN}
+      uri: http://localhost:8200/
+  config:
+    import: optional:vault://
+
+vault_tester: ${vault_tester}
+
+#  spring.cloud.config.enabled: false
+#  spring.cloud.vault.enabled: true
+#  spring.cloud.vault.uri: http://172.23.0.2:8200/
+#  spring.cloud.vault.authentication: token
+#  spring.cloud.vault.token: ${XX}
+#
+#  spring.cloud.vault.kv.enabled: true
+#  spring.cloud.vault.kv.default-context: dev
+#  spring.cloud.vault.kv.backend: product-service
+
+
 # logging properties
 logging:
   pattern:

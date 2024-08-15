@@ -10,7 +10,8 @@ public class GenericLogger {
 
     public static void handleException(Logger log, String classMethod, String errorMessage, Object obj, String nonBusinessMessage, Exception e) {
         if (e instanceof GenericException gex) {
-            log.error("{} {} {} ", classMethod, errorMessage, Objects.requireNonNullElse(obj, " "), e);
+            //log.error("{} {} {} ", classMethod, errorMessage, Objects.requireNonNullElse(obj, " "), e);
+            log.info("ex-> {} {} {} {}", classMethod, errorMessage, Objects.requireNonNullElse(obj, ""), e.getMessage());
             throw gex;
         } else {
             log.error("Non Business Exception with ", e);
