@@ -12,16 +12,25 @@ import java.util.stream.IntStream;
 
 public class StreamExceptionOperation {
 
+    private static final List<String> CITIES = List.of("istanbul", "samsun", "tokat", "izmir");
+
     public static void main(String[] args) {
         StreamExceptionOperation seo = new StreamExceptionOperation();
-        seo.unCheckedException();
-        seo.checkedException();
-        seo.checkedExceptionWorkAround1();
-        seo.checkedExceptionWithEither();
+
+        List<String> uncheckedCities = seo.unCheckedException(CITIES);
+        System.out.println("uncheckedCities = " + uncheckedCities);
+
+        List<String> checkedCities = seo.checkedException(CITIES);
+        System.out.println("checkedCities = " + checkedCities);
+
+        List<Integer> checkedWorkAroundCities = seo.checkedExceptionWorkAround1(CITIES);
+        System.out.println("checkedWorkAroundCities = " + checkedWorkAroundCities);
+
+        List<Either> eithersCities = seo.checkedExceptionWithEither(CITIES);
+        System.out.println("eithersCities = " + eithersCities);
     }
 
-    private void checkedExceptionWithEither() {
-        List<String> cities = List.of("istanbul", "samsun", "tokat", "izmir");
+    private List<Either> checkedExceptionWithEither(List<String> cities) {
         List<Either> eitherList = cities.stream()
                 .map(wrapWithEither(this::throwForEither))
                 .toList();
@@ -30,7 +39,7 @@ public class StreamExceptionOperation {
                 .collect(Collectors.partitioningBy(Either::isRight));
         System.out.println("Either Rights = " + eitherListToPosition.get(Boolean.TRUE));
         System.out.println("Either Exceptions = " + eitherListToPosition.get(Boolean.FALSE));
-
+        return eitherList;
     }
 
     private String throwForEither(String st) throws IOException {
@@ -40,7 +49,7 @@ public class StreamExceptionOperation {
         return st;
     }
 
-    private <T, R> Function<T,Either> wrapWithEither(CheckedExceptionWrapped<T, R> fun) {
+    private <T, R> Function<T, Either> wrapWithEither(CheckedExceptionWrapped<T, R> fun) {
         return x -> {
             try {
                 return Either.Right(fun.wrap(x));
@@ -50,26 +59,23 @@ public class StreamExceptionOperation {
         };
     }
 
-    private void checkedExceptionWorkAround1() {
-        List<String> cities = List.of("istanbul", "samsun", "tokat", "izmir");
+    private List<Integer> checkedExceptionWorkAround1(List<String> cities) {
         List<String> result = cities.stream()
                 .map(wrapCheckedException(this::throwCheckedException))
                 .toList();
         System.out.println("wrapped for String = " + result);
 
         List<Integer> numbers = IntStream.rangeClosed(1, 10).boxed().toList();
-        List<Integer> numbersDivideZero = numbers.stream()
+        return numbers.stream()
                 .map(wrapCheckedException(s -> s / 0))
                 .toList();
-        System.out.println("numbersDivideZero = " + numbersDivideZero);
     }
 
-    private void unCheckedException() {
-        List<String> cities = List.of("istanbul", "samsun", "tokat", "izmir");
+    private List<String> unCheckedException(List<String> cities) {
         List<String> result = null;
         try {
             result = cities.stream()
-                    .map(s -> throwUncheckedExption(s))
+                    .map(this::throwUncheckedExption)
                     .filter(Objects::isNull)
                     .map(s -> "is null")
                     .toList();
@@ -77,18 +83,17 @@ public class StreamExceptionOperation {
 //            throw new RuntimeException(e);
             System.out.println("unchecked exception e = " + e);
         }
-        System.out.println("result = " + result);
+        return result;
     }
 
     private String throwUncheckedExption(String st) {
         throw new IllegalArgumentException("illegal argument");
     }
 
-    private void checkedException() {
-        List<String> list = null;
+    private List<String> checkedException(List<String> cities) {
+        List<String> listForCheckedCities;
         try {
-            List<String> names = List.of("istanbul", "samsun", "tokat", "izmir");
-            list = names.stream()
+            listForCheckedCities = cities.stream()
                     .map(name -> {
                         try {
                             return throwCheckedException(name);
@@ -101,7 +106,7 @@ public class StreamExceptionOperation {
         } catch (Exception e) {
             throw e;
         }
-        System.out.println("list = " + list);
+        return listForCheckedCities;
     }
 
     private String throwCheckedException(String st) throws IOException {
@@ -110,9 +115,8 @@ public class StreamExceptionOperation {
     }
 
 
-
-    private <T, R> Function<T,R> wrapCheckedException(CheckedExceptionWrapped<T, R> fun) {
-        return  x -> {
+    private <T, R> Function<T, R> wrapCheckedException(CheckedExceptionWrapped<T, R> fun) {
+        return x -> {
             try {
                 return fun.wrap(x);
             } catch (Exception e) {
@@ -125,5 +129,5 @@ public class StreamExceptionOperation {
 }
 
 interface CheckedExceptionWrapped<T, R> {
-    R wrap(T t) throws  Exception;
+    R wrap(T t) throws Exception;
 }

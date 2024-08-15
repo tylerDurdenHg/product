@@ -1,0 +1,25 @@
+version: '3.6'
+
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    ports:
+      - "8200:8200"
+    entrypoint: vault server -config=/vault/config/config.json
+    environment:
+      VAULT_ADDR: http://127.0.0.1:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault-v1:/vault/file:rw
+      - ./vault/file:/vault/file:rw
+      - ./vault/config:/vault/config:rw
+    restart: always
+
+volumes:
+  vault-v1:
+
+networks:
+  vault_default:
+    external: true

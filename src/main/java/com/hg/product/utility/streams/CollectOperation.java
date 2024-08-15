@@ -1,21 +1,26 @@
 package com.hg.product.utility.streams;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.hg.product.utility.streams.CollectOperation.EmployeeOfCollection.DEFAULT_EMPLOYEE;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
-;
 
 public class CollectOperation {
+
     public record EmployeeOfCollection(long id, String name, String department) {
-         public static final EmployeeOfCollection DEFAULT_EMPLOYEE_OF_COLLECTION = new EmployeeOfCollection(-1, "default", "default");
+        public static final EmployeeOfCollection DEFAULT_EMPLOYEE = new EmployeeOfCollection(-1, "default", "default");
     }
 
-    List<EmployeeOfCollection> employeeOfCollections = List.of(
+    final List<EmployeeOfCollection> employeeOfCollections = List.of(
             new EmployeeOfCollection(1, "tyler", "it"),
             new EmployeeOfCollection(2, "mike", "hr"),
             new EmployeeOfCollection(1, "barney", "hr"),
@@ -23,6 +28,7 @@ public class CollectOperation {
             new EmployeeOfCollection(4, "mike", "it")
     );
 
+    
     public static void main(String[] args) {
         CollectOperation co = new CollectOperation();
         List<Integer> toList = co.collectToList();
@@ -34,13 +40,13 @@ public class CollectOperation {
         DoubleSummaryStatistics summarizing = co.summarizing();
         System.out.println("summarizing = " + summarizing);
 
-        Map<String, EmployeeOfCollection> teeing = co.teeing();
-        System.out.println("teeing = " + teeing);
+        Map<String, EmployeeOfCollection> teeing = co.teeingEmployees();
+        System.out.println("teeing = ✔   " + teeing);
 
         List<String> collectAndThen = co.collectAndThen();
         System.out.println("collectAndThen = " + collectAndThen);
 
-        List<EmployeeOfCollection> filtering = co.filtering();
+        List<EmployeeOfCollection> filtering = co.filteringEmployees();
         System.out.println("filtering = " + filtering);
 
         Double averaging = co.averaging();
@@ -67,23 +73,30 @@ public class CollectOperation {
     private List<String> workingMoreThanXEmployeesInADepartment(int minWorkerCount) {
         return employeeOfCollections
                 .stream()
-                .collect(
-                        collectingAndThen(
+                .collect(collectingAndThen(
                                 groupingBy(EmployeeOfCollection::department), // Map<Dep, List<Employee>
-                                map -> map.entrySet().stream()
-                                        .filter(val -> val.getValue().size() > minWorkerCount)
-                                        .flatMap(emps -> emps.getValue().stream())
-                                        .map(emp -> "id:" + emp.id + " name:" + emp.name)
-                                        .toList()
+                                extractNamesMoreThanWorkerCountFromMap(minWorkerCount)
                         )
                 );
+    }
+
+    private static Function<Map<String, List<EmployeeOfCollection>>, List<String>> extractNamesMoreThanWorkerCountFromMap(int minWorkerCount) {
+        return map -> map.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().size() > minWorkerCount)
+                .flatMap(emp -> emp.getValue().stream())
+                .map(emp -> "id:" + emp.id + " name:" + emp.name)
+                .toList();
     }
 
 
     private Map<Boolean, List<String>> partitionBy() {
         return employeeOfCollections
                 .stream()
-                .collect(partitioningBy(s -> s.name.length() > 4, Collectors.mapping(EmployeeOfCollection::name, toList())));
+                .collect(partitioningBy(
+                        emp -> emp.name.length() > 4,
+                        mapping(EmployeeOfCollection::name, toList())
+                ));
     }
 
     private LinkedHashMap<String, Long> createMap() {
@@ -92,7 +105,7 @@ public class CollectOperation {
                 .collect(toMap(
                         EmployeeOfCollection::name,
                         EmployeeOfCollection::id,
-                        (a, b) -> a,
+                        (first, second) -> first,
                         LinkedHashMap::new
                 ));
     }
@@ -100,13 +113,20 @@ public class CollectOperation {
     private Set<String> flatMappingCharacters() {
         return employeeOfCollections
                 .stream()
-                .collect(Collectors.flatMapping(s -> Arrays.stream(s.name.split("")), toSet()));
+                .collect(flatMapping(
+                        emp -> Arrays.stream(emp.name.split("")),
+                        toSet()
+                ));
+
     }
 
     private Set<String> mappingEmployeeNames() {
         return employeeOfCollections
                 .stream()
-                .collect(Collectors.mapping(EmployeeOfCollection::name, toSet()));
+                .collect(mapping(
+                        EmployeeOfCollection::name,
+                        toSet()
+                ));
     }
 
     private Double averaging() {
@@ -115,45 +135,50 @@ public class CollectOperation {
                 .collect(averagingDouble(EmployeeOfCollection::id));
     }
 
-    private List<EmployeeOfCollection> filtering() {
+    private List<EmployeeOfCollection> filteringEmployees() {
         return employeeOfCollections
                 .stream()
-                .collect(Collectors.filtering(s -> s.id > 2, toList()));
+                .collect(filtering(
+                        emp -> emp.id > 2,
+                        toList()
+                ));
     }
 
     private List<String> collectAndThen() {
-        Collector<EmployeeOfCollection, ?, EmployeeOfCollection> collector =
-                collectingAndThen(
+        EmployeeOfCollection maxIdEmployeeOfCollection = employeeOfCollections
+                .stream()
+                .collect(collectingAndThen(
                         maxBy(comparing(EmployeeOfCollection::id)),
                         emp -> emp.orElse(new EmployeeOfCollection(0, "non-emp", "non"))
-                );
-
-        EmployeeOfCollection maxIdEmployeeOfCollection = employeeOfCollections.stream()
-                .collect(collector);
+                ));
         System.out.println("maxIdEmployee = " + maxIdEmployeeOfCollection);
+
         // #  find departments who are having max employees
-        Map<String, Long> depWorkersMap = employeeOfCollections.stream()
+        Map<String, Long> depWorkersMap = employeeOfCollections
+                .stream()
                 .collect(groupingBy(EmployeeOfCollection::department, counting()));// it 2, hr 2, xx 1
 
-        Long maxWorkerCount = depWorkersMap.entrySet().stream()
+        Long maxWorkerCount = depWorkersMap.entrySet()
+                .stream()
                 .max(Map.Entry.comparingByKey())
                 .map(Map.Entry::getValue)
                 .orElse(0L);
-        return depWorkersMap.entrySet().stream()
+
+        return depWorkersMap.entrySet()
+                .stream()
                 .filter(entry -> entry.getValue().equals(maxWorkerCount))
                 .map(Map.Entry::getKey)
                 .toList();
     }
 
-    private Map<String, EmployeeOfCollection> teeing() {
+    private Map<String, EmployeeOfCollection> teeingEmployees() {
         return employeeOfCollections
                 .stream()
-                .collect(
-                        Collectors.teeing(
-                                minBy(comparing(EmployeeOfCollection::id)),
-                                maxBy(comparing(EmployeeOfCollection::id)),
-                                (min, max) -> Map.of("min", min.orElse(EmployeeOfCollection.DEFAULT_EMPLOYEE_OF_COLLECTION), "max", max.orElse(EmployeeOfCollection.DEFAULT_EMPLOYEE_OF_COLLECTION))
-                        ));
+                .collect(teeing(
+                        minBy(comparing(EmployeeOfCollection::id)),
+                        maxBy(comparing(EmployeeOfCollection::id)),
+                        (min, max) -> Map.of("min", min.orElse(DEFAULT_EMPLOYEE), "max", max.orElse(DEFAULT_EMPLOYEE))
+                ));
     }
 
     private DoubleSummaryStatistics summarizing() {
@@ -165,7 +190,6 @@ public class CollectOperation {
         return employeeOfCollections
                 .stream()
                 .collect(summarizingDouble(EmployeeOfCollection::id));
-
     }
 
     private LinkedHashMap<String, List<String>> collectToGroup() {
@@ -181,16 +205,19 @@ public class CollectOperation {
 
         return employeeOfCollections
                 .stream()
-                .collect(
-                        groupingBy(EmployeeOfCollection::department, LinkedHashMap::new,
-                                Collectors.mapping(EmployeeOfCollection::name, toList())));
+                .collect(groupingBy(
+                                EmployeeOfCollection::department,
+                                LinkedHashMap::new,
+                                mapping(EmployeeOfCollection::name, toList())
+                        ));
     }
 
     private List<Integer> collectToList() {
         List<Integer> numbers = IntStream.rangeClosed(1, 10).boxed().toList();
         return numbers
                 .stream()
-                .filter(s -> s > 5)
+                .filter(num -> num > 5)
                 .collect(toList());
     }
+
 }
